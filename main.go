@@ -12,11 +12,22 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+	"strconv"
 )
 
 var markedPixels map[image.Point]bool
+var margin int
 
 func main() {
+	margin = 4
+	if userMargin := os.Getenv("PIXEL_MARGIN"); userMargin != "" {
+		usrM, err := strconv.Atoi(userMargin)
+		if err != nil {
+			log.Fatal("%s is not a valid integer. unset PIXEL_MARGIN or give a valid value", )
+		}
+		margin = usrM
+	}
+
 	markedPixels = make(map[image.Point]bool)
 	args := os.Args
 	if len(args) != 3 {
@@ -143,8 +154,7 @@ func (cp *spriteBounds) findBounds(x, y int, img image.Image, bgColor color.Colo
 
 	//log.Printf("adding point %v,%v", x, y)
 
-	//recurse over left right up down 2 pixels
-	margin := 4
+	//recurse over left right up down pixels within a given margin
 	for i := 1; i <= margin; i++ {
 		cp.findBounds(x-i, y, img, bgColor, sprites)
 		cp.findBounds(x+i, y, img, bgColor, sprites)
