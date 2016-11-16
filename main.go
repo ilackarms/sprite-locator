@@ -89,29 +89,29 @@ func newSpriteBounds() *spriteBounds {
 
 func (cp *spriteBounds) findBounds(x, y int, img image.Image, bgColor color.Color, sprites []image.Rectangle) {
 	pixel := image.Point{X: x, Y: y}
-	log.Printf("inspecting %v", pixel)
+	//log.Printf("inspecting %v", pixel)
 	//already inspected this pixel
 	if marked := markedPixels[pixel]; marked {
-		log.Printf("REJECTED: %v,%v is used", x, y)
+		//log.Printf("REJECTED: %v,%v is used", x, y)
 		return
 	}
 	markedPixels[pixel] = true
 
 	//out of bounds
 	if !pixel.In(img.Bounds()) {
-		log.Printf("REJECTED: %v,%v is out of bounds", x, y)
+		//log.Printf("REJECTED: %v,%v is out of bounds", x, y)
 		return
 	}
 	//found a bg pixel
 	if img.At(x, y) == bgColor {
-		log.Printf("REJECTED: %v,%v is bg", x, y)
+		//log.Printf("REJECTED: %v,%v is bg", x, y)
 		return
 	}
 
 	//inspecting a pixel in a sprite already counted
 	for _, sprite := range sprites {
 		if image.Pt(x, y).In(sprite) {
-			log.Printf("REJECTED: %v,%v is in a sprite already", x, y)
+			//log.Printf("REJECTED: %v,%v is in a sprite already", x, y)
 			return
 		}
 	}
@@ -136,15 +136,15 @@ func (cp *spriteBounds) findBounds(x, y int, img image.Image, bgColor color.Colo
 	}
 
 	if !out {
-		log.Printf("REJECTED: %v is inside bounds {%v:%v}", pixel, cp.min, cp.max)
+		//log.Printf("REJECTED: %v is inside bounds {%v:%v}", pixel, cp.min, cp.max)
 		return
 	}
 
-	log.Printf("adding point %v,%v", x, y)
+	//log.Printf("adding point %v,%v", x, y)
 
 	//recurse over left right up down 2 pixels
-	margin := 10
-	for i := 1; i < margin; i++ {
+	margin := 4
+	for i := 1; i <= margin; i++ {
 		cp.findBounds(x-i, y, img, bgColor, sprites)
 		cp.findBounds(x+i, y, img, bgColor, sprites)
 		cp.findBounds(x, y-i, img, bgColor, sprites)
