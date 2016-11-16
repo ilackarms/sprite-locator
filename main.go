@@ -1,16 +1,16 @@
 package main
 
 import (
-	"os"
-	"log"
-	"path/filepath"
+	"encoding/json"
+	"github.com/ilackarms/sprite-locator/models"
 	"image"
 	"image/color"
-	"github.com/ilackarms/sprite-locator/models"
-	"io/ioutil"
-	"encoding/json"
 	"image/png"
+	"io/ioutil"
+	"log"
 	"math"
+	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -80,6 +80,7 @@ func main() {
 type spriteBounds struct {
 	min, max image.Point
 }
+
 func newSpriteBounds() *spriteBounds {
 	return &spriteBounds{
 		min: image.Pt(math.MaxInt64, math.MaxInt64),
