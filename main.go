@@ -10,9 +10,14 @@ import (
 	"io/ioutil"
 	"encoding/json"
 	"image/png"
+	"math"
+	"time"
 )
 
+var markedPixels map[image.Point]bool
+
 func main() {
+	markedPixels = make(map[image.Point]bool)
 	args := os.Args
 	if len(args) != 3 {
 		log.Fatal("usage sprite-locator <filename> <out-file>")
@@ -41,10 +46,14 @@ func main() {
 	//mark all pixels that are not bgcolor
 	scanImage(img, func(img image.Image, x, y int) {
 		if img.At(x, y) != bgColor {
-			spritePixels := findSprite(x, y, img, bgColor, []image.Point{}, sprites)
-			sprite := bounds(spritePixels)
-			log.Printf("found a sprite with bounds %v", sprite)
-			sprites = append(sprites, sprite)
+			sprite := newSpriteBounds()
+			sprite.findBounds(x, y, img, bgColor, sprites)
+			rect := image.Rectangle{sprite.min, sprite.max}
+			if !rect.Empty() {
+				sprites = append(sprites, rect)
+				log.Printf("found a sprite with bounds %v; total sprites found: %v", len(sprites), rect)
+				time.Sleep(time.Second * 10)
+			}
 		}
 	})
 	spriteSheet := models.Spritesheet{}
@@ -68,58 +77,80 @@ func main() {
 	log.Printf("metadata sheet with %v sprites written to %s", len(spriteSheet.Sprites), outFile)
 }
 
-func bounds(points []image.Point) image.Rectangle {
-	var minX, minY, maxX, maxY int
-	for _, point := range points {
-		if minX < point.X {
-			minX = point.X
-		}
-		if minY < point.Y {
-			minY = point.Y
-		}
-		if maxX > point.X {
-			maxX = point.X
-		}
-		if maxY > point.Y {
-			maxY = point.Y
-		}
+type spriteBounds struct {
+	min, max image.Point
+}
+func newSpriteBounds() *spriteBounds {
+	return &spriteBounds{
+		min: image.Pt(math.MaxInt64, math.MaxInt64),
+		max: image.Pt(-1, -1),
 	}
-	return image.Rect(minX, minY, maxX, maxY)
 }
 
-func findSprite(x, y int, img image.Image, bgColor color.Color, points []image.Point, foundSprites []image.Rectangle) []image.Point {
+func (cp *spriteBounds) findBounds(x, y int, img image.Image, bgColor color.Color, sprites []image.Rectangle) {
+	pixel := image.Point{X: x, Y: y}
+	log.Printf("inspecting %v", pixel)
+	//already inspected this pixel
+	if marked := markedPixels[pixel]; marked {
+		log.Printf("REJECTED: %v,%v is used", x, y)
+		return
+	}
+	markedPixels[pixel] = true
+
 	//out of bounds
-	if x < img.Bounds().Min.X || x > img.Bounds().Max.X - 1 ||
-		y < img.Bounds().Min.Y || y > img.Bounds().Max.Y - 1 {
-		return points
+	if !pixel.In(img.Bounds()) {
+		log.Printf("REJECTED: %v,%v is out of bounds", x, y)
+		return
 	}
 	//found a bg pixel
 	if img.At(x, y) == bgColor {
-		return points
+		log.Printf("REJECTED: %v,%v is bg", x, y)
+		return
 	}
+
 	//inspecting a pixel in a sprite already counted
-	for _, sprite := range foundSprites {
+	for _, sprite := range sprites {
 		if image.Pt(x, y).In(sprite) {
-			return points
+			log.Printf("REJECTED: %v,%v is in a sprite already", x, y)
+			return
 		}
 	}
 
-	//found a point that we already marked
-	for _, point := range points {
-		if point.X == x && point.Y == y {
-			return points
-		}
+	var out bool
+	//resize bound
+	if x <= cp.min.X {
+		out = true
+		cp.min.X = x
 	}
-	//add x,y to points
-	pixel := image.Point{X: x, Y: y}
-	log.Printf("adding pixel %v", pixel)
-	points = append(points, pixel)
-	//recurse over N, E, S, W
-	points = append(points, findSprite(x-1, y, img, bgColor, points, foundSprites)...)
-	points = append(points, findSprite(x+1, y, img, bgColor, points, foundSprites)...)
-	points = append(points, findSprite(x, y-1, img, bgColor, points, foundSprites)...)
-	points = append(points, findSprite(x, y+1, img, bgColor, points, foundSprites)...)
-	return points
+	if y <= cp.min.Y {
+		out = true
+		cp.min.Y = y
+	}
+	if x >= cp.max.X {
+		out = true
+		cp.max.X = x
+	}
+	if y >= cp.max.Y {
+		out = true
+		cp.max.Y = y
+	}
+
+	if !out {
+		log.Printf("REJECTED: %v is inside bounds {%v:%v}", pixel, cp.min, cp.max)
+		return
+	}
+
+	log.Printf("adding point %v,%v", x, y)
+
+	//recurse over left right up down 2 pixels
+	margin := 10
+	for i := 1; i < margin; i++ {
+		cp.findBounds(x-i, y, img, bgColor, sprites)
+		cp.findBounds(x+i, y, img, bgColor, sprites)
+		cp.findBounds(x, y-i, img, bgColor, sprites)
+		cp.findBounds(x, y+i, img, bgColor, sprites)
+	}
+	return
 }
 
 func findBgColor(img image.Image) color.Color {
