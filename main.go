@@ -23,7 +23,7 @@ func main() {
 	if userMargin := os.Getenv("PIXEL_MARGIN"); userMargin != "" {
 		usrM, err := strconv.Atoi(userMargin)
 		if err != nil {
-			log.Fatal("%s is not a valid integer. unset PIXEL_MARGIN or give a valid value", )
+			log.Fatalf("%s is not a valid integer. unset PIXEL_MARGIN or give a valid value", userMargin)
 		}
 		margin = usrM
 	}
