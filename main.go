@@ -39,11 +39,14 @@ func main() {
 	}
 
 	args := os.Args
-	if len(args) != 3 {
-		log.Fatal("usage sprite-locator <filename> <out-file>")
+	if len(args) != 2 && len(args) != 3 {
+		log.Fatal("usage sprite-locator <filename> [<out-file>]")
 	}
 	inFile := args[1]
-	outFile := args[2]
+	outFile := strings.TrimSuffix(inFile, ".png")+".json"
+	if len(args) == 3 {
+		outFile = args[2]
+	}
 	path, err := filepath.Abs(inFile)
 	if err != nil {
 		log.Fatalf("abs path %v: %v", inFile, err)
