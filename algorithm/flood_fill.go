@@ -115,6 +115,10 @@ func (cp *connectedPixels) findConnectingPixels(x, y int, img image.Image, bgCol
 		cp.findConnectingPixels(x + i, y, img, bgColor, sprites)
 		cp.findConnectingPixels(x, y - i, img, bgColor, sprites)
 		cp.findConnectingPixels(x, y + i, img, bgColor, sprites)
+		cp.findConnectingPixels(x - i, y - i, img, bgColor, sprites)
+		cp.findConnectingPixels(x - i, y + 1, img, bgColor, sprites)
+		cp.findConnectingPixels(x + i, y - 1, img, bgColor, sprites)
+		cp.findConnectingPixels(x + i, y + 1, img, bgColor, sprites)
 	}
 	return
 }
