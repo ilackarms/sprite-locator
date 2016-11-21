@@ -10,6 +10,10 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"image"
+	"fmt"
+	"errors"
+	"strings"
 )
 
 func main() {
@@ -28,6 +32,10 @@ func main() {
 			log.Fatalf("%s is not a valid integer. unset MIN_IMAGE_HEIGHT or give a valid value", userMinHeight)
 		}
 		minImageHeight = usrM
+	}
+	var extractSprites bool
+	if ex := os.Getenv("EXTRACT_SPRITES"); ex != "" && ex != "false" && ex != "0" {
+		extractSprites = true
 	}
 
 	args := os.Args
@@ -59,7 +67,14 @@ func main() {
 
 	spriteSheet := models.Spritesheet{}
 
-	for _, sprite := range sprites {
+	for i, sprite := range sprites {
+		if extractSprites {
+			fileName := fmt.Sprintf("%v_%v.png", strings.TrimSuffix(inFile, ".png"), i)
+			if err := extractSprite(img, sprite, fileName); err != nil {
+				log.Printf("ERROR: COULD NOT EXTRACT SPRITE: %v", err)
+			}
+		}
+
 		spriteSheet.Sprites = append(spriteSheet.Sprites,
 			models.Sprite{
 				Min: models.Point{sprite.Min.X, sprite.Min.Y},
@@ -76,4 +91,28 @@ func main() {
 		log.Fatalf("writing sprite sheet metadata: %v", err)
 	}
 	log.Printf("metadata sheet with %v sprites written to %s", len(spriteSheet.Sprites), outFile)
+}
+
+func extractSprite(srcImage image.Image, sprite image.Rectangle, outFile string) error {
+	newImage := image.NewRGBA(srcImage.Bounds())
+
+	// At(Bounds().Min.X, Bounds().Min.Y) returns the upper-left pixel of the grid.
+	// At(Bounds().Max.X-1, Bounds().Max.Y-1) returns the lower-right one.
+	for y := sprite.Min.Y; y < sprite.Max.Y - 1; y++ {
+		for x := sprite.Min.X; x < sprite.Max.X - 1; x++ {
+			newImage.Set(x, y, srcImage.At(x, y))
+		}
+	}
+
+	//create or open file
+	out, err := os.Create(outFile)
+	if err != nil {
+		log.Printf("WARN: creating file: %v", err)
+		//open
+		out, err = os.Open(outFile)
+		if err != nil {
+			return errors.New(fmt.Sprintf("opening existing file: %v", err))
+		}
+	}
+	return png.Encode(out, newImage)
 }

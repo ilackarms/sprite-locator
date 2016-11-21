@@ -14,6 +14,7 @@ type FloodFillAlgorithm struct {
 
 func (a *FloodFillAlgorithm) FindSprites(img image.Image) []image.Rectangle {
 	bgColor := findBgColor(img)
+	log.Printf("finding sprites in sheet %v with bg color %v", img.Bounds(), bgColor)
 	sprites := []image.Rectangle{}
 	//mark all pixels that are not bgcolor
 	scanImage(img, func(img image.Image, x, y int) {
@@ -56,26 +57,26 @@ func (cp *spriteBounds) findBounds(x, y int, img image.Image, bgColor color.Colo
 	//log.Printf("inspecting %v", pixel)
 	//already inspected this pixel
 	if marked := cp.markedPixels[pixel]; marked {
-		//log.Printf("REJECTED: %v,%v is used", x, y)
+		log.Printf("REJECTED: %v,%v is used", x, y)
 		return
 	}
 	cp.markedPixels[pixel] = true
 
 	//out of bounds
 	if !pixel.In(img.Bounds()) {
-		//log.Printf("REJECTED: %v,%v is out of bounds", x, y)
+		log.Printf("REJECTED: %v,%v is out of bounds", x, y)
 		return
 	}
 	//found a bg pixel
 	if img.At(x, y) == bgColor {
-		//log.Printf("REJECTED: %v,%v is bg", x, y)
+		log.Printf("REJECTED: %v,%v is bg", x, y)
 		return
 	}
 
 	//inspecting a pixel in a sprite already counted
 	for _, sprite := range sprites {
 		if image.Pt(x, y).In(sprite) {
-			//log.Printf("REJECTED: %v,%v is in a sprite already", x, y)
+			log.Printf("REJECTED: %v,%v is in a sprite already", x, y)
 			return
 		}
 	}
@@ -100,7 +101,7 @@ func (cp *spriteBounds) findBounds(x, y int, img image.Image, bgColor color.Colo
 	}
 
 	if !out {
-		//log.Printf("REJECTED: %v is inside bounds {%v:%v}", pixel, cp.min, cp.max)
+		log.Printf("REJECTED: %v is inside bounds {%v:%v}", pixel, cp.min, cp.max)
 		return
 	}
 
@@ -108,39 +109,10 @@ func (cp *spriteBounds) findBounds(x, y int, img image.Image, bgColor color.Colo
 
 	//recurse over left right up down pixels within a given margin
 	for i := 1; i <= cp.margin; i++ {
-		cp.findBounds(x-i, y, img, bgColor, sprites)
-		cp.findBounds(x+i, y, img, bgColor, sprites)
-		cp.findBounds(x, y-i, img, bgColor, sprites)
-		cp.findBounds(x, y+i, img, bgColor, sprites)
+		cp.findBounds(x - i, y, img, bgColor, sprites)
+		cp.findBounds(x + i, y, img, bgColor, sprites)
+		cp.findBounds(x, y - i, img, bgColor, sprites)
+		cp.findBounds(x, y + i, img, bgColor, sprites)
 	}
 	return
-}
-
-func findBgColor(img image.Image) color.Color {
-	//find most common color; this is background
-	colorFrequencies := make(map[color.Color]int)
-	scanImage(img, func(img image.Image, x, y int) {
-		color := img.At(x, y)
-		colorFrequencies[color] += 1
-	})
-
-	var bgColor color.Color
-	maxFrequency := 0
-	for color, frequency := range colorFrequencies {
-		if frequency > maxFrequency {
-			bgColor = color
-			maxFrequency = frequency
-		}
-	}
-	return bgColor
-}
-
-func scanImage(img image.Image, callback func(img image.Image, x, y int)) {
-	// At(Bounds().Min.X, Bounds().Min.Y) returns the upper-left pixel of the grid.
-	// At(Bounds().Max.X-1, Bounds().Max.Y-1) returns the lower-right one.
-	for x := img.Bounds().Min.X; x < img.Bounds().Max.X-1; x++ {
-		for y := img.Bounds().Min.Y; y < img.Bounds().Max.Y-1; y++ {
-			callback(img, x, y)
-		}
-	}
 }
