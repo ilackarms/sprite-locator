@@ -64,6 +64,7 @@ func main() {
 	}
 
 	sprites := algorithm.FindSprites(img)
+	log.Printf("found %v total sprites, writing json file: %v", len(sprites), outFile)
 
 	spriteSheet := models.Spritesheet{}
 
@@ -94,6 +95,7 @@ func main() {
 }
 
 func extractSprite(srcImage image.Image, sprite image.Rectangle, outFile string) error {
+	log.Printf("extracting srite at %v to %v", sprite, outFile)
 	newImage := image.NewRGBA(srcImage.Bounds())
 
 	// At(Bounds().Min.X, Bounds().Min.Y) returns the upper-left pixel of the grid.
