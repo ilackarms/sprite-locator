@@ -25,3 +25,6 @@ _testmain.go
 *.test
 *.prof
 sprite-locator
+all all.zip
+all
+all.zip
