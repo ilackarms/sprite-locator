@@ -20,12 +20,20 @@ var margin int
 
 func main() {
 	margin = 4
+	minImageHeight := 0
 	if userMargin := os.Getenv("PIXEL_MARGIN"); userMargin != "" {
 		usrM, err := strconv.Atoi(userMargin)
 		if err != nil {
 			log.Fatalf("%s is not a valid integer. unset PIXEL_MARGIN or give a valid value", userMargin)
 		}
 		margin = usrM
+	}
+	if userMinHeight := os.Getenv("MIN_IMAGE_HEIGHT"); userMinHeight != "" {
+		usrM, err := strconv.Atoi(userMinHeight)
+		if err != nil {
+			log.Fatalf("%s is not a valid integer. unset MIN_IMAGE_HEIGHT or give a valid value", userMinHeight)
+		}
+		minImageHeight = usrM
 	}
 
 	markedPixels = make(map[image.Point]bool)
@@ -61,8 +69,14 @@ func main() {
 			sprite.findBounds(x, y, img, bgColor, sprites)
 			rect := image.Rectangle{sprite.min, sprite.max}
 			if !rect.Empty() {
+				if minImageHeight > 0 {
+					if rect.Bounds().Size().Y < minImageHeight {
+						log.Printf("sprite with bounds %v too small, ignoirng", rect)
+						return
+					}
+				}
 				sprites = append(sprites, rect)
-				log.Printf("found a sprite with bounds %v; total sprites found: %v", len(sprites), rect)
+				log.Printf("found a sprite with bounds %v; total sprites found: %v", rect, len(sprites))
 				time.Sleep(time.Second * 10)
 			}
 		}
