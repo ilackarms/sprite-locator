@@ -200,11 +200,44 @@ func drawGuides(img image.Image, sheet *models.Spritesheet, outFile string) erro
 	scanImage(img, func(img image.Image, x, y int) {
 		newImage.Set(x, y, img.At(x, y))
 	})
-	green := color.RGBA{R: 34, G: 177, B: 76, A: 255}
-	for _, pt := range boundingBoxPixels(sheet.Sprites) {
-		newImage.Set(pt.X, pt.Y, green)
+	boxColors := make([]color.Color, 256*256*256)
+	log.Printf("slow here?")
+	i := 0
+	for r := uint8(255); r >= 0; r-- {
+		g := uint8(255 - r)
+		b := uint8(0)
+		boxColors[i] = color.RGBA{R: r, G: g, B: b, A: 255}
+		i++
+		if i > len(sheet.Sprites) {
+			break
+		}
 	}
-
+	for g := uint8(255); g >= 0; g-- {
+		b := uint8(255 - g)
+		r := uint8(0)
+		boxColors[i] = color.RGBA{R: r, G: g, B: b, A: 255}
+		i++
+		if i > len(sheet.Sprites) {
+			break
+		}
+	}
+	for b := uint8(255); b >= 0; b-- {
+		r := uint8(255 - b)
+		g := uint8(0)
+		boxColors[i] = color.RGBA{R: r, G: g, B: b, A: 255}
+		i++
+		if i > len(sheet.Sprites) {
+			break
+		}
+	}
+	log.Printf("slow here?2")
+	for i, sprite := range sheet.Sprites {
+		for _, pt := range boundingBoxPixels(sprite) {
+			newImage.Set(pt.X, pt.Y, boxColors[i%len(sheet.Sprites)])
+		}
+		break
+	}
+	log.Printf("slow here?3")
 
 	//create or open file
 	out, err := os.Create(outFile)
@@ -220,21 +253,19 @@ func drawGuides(img image.Image, sheet *models.Spritesheet, outFile string) erro
 	return png.Encode(out, newImage)
 }
 
-func boundingBoxPixels(sprites []models.Sprite) []image.Point {
+func boundingBoxPixels(sprite models.Sprite) []image.Point {
 	pixels := []image.Point{}
-	for _, sprite := range sprites {
-		for x := sprite.Min.X; x <= sprite.Max.X; x++ {
-			//top line
-			pixels = append(pixels, image.Pt(x, sprite.Min.Y))
-			//bottom line
-			pixels = append(pixels, image.Pt(x, sprite.Max.Y))
-		}
-		for y := sprite.Min.Y; y <= sprite.Max.X; y++ {
-			//left line
-			pixels = append(pixels, image.Pt(sprite.Min.X, y))
-			//right line
-			pixels = append(pixels, image.Pt(sprite.Max.X, y))
-		}
+	for x := sprite.Min.X; x <= sprite.Max.X; x++ {
+		//top line
+		pixels = append(pixels, image.Pt(x, sprite.Min.Y))
+		//bottom line
+		pixels = append(pixels, image.Pt(x, sprite.Max.Y))
+	}
+	for y := sprite.Min.Y; y <= sprite.Max.X; y++ {
+		//left line
+		pixels = append(pixels, image.Pt(sprite.Min.X, y))
+		//right line
+		pixels = append(pixels, image.Pt(sprite.Max.X, y))
 	}
 	return pixels
 }
