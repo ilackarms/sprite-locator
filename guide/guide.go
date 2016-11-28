@@ -15,6 +15,7 @@ import (
 	"sort"
 	"image/color"
 	"math"
+	"github.com/golang/freetype"
 )
 
 var spriteMargin int
@@ -231,10 +232,28 @@ func drawGuides(img image.Image, sheet *models.Spritesheet, outFile string) erro
 			break
 		}
 	}
+
+	fontBytes, err := ioutil.ReadFile("ANDRO.TTF")
+	if err != nil {
+		return err
+	}
+	f, err := freetype.ParseFont(fontBytes)
+	if err != nil {
+		return err
+	}
+
+	c := freetype.NewContext()
+	c.SetDPI(72.0)
+	c.SetFont(f)
+	c.SetFontSize(24)
+	c.SetClip(newImage.Bounds())
+	c.SetDst(newImage)
+	c.SetSrc(image.Black)
+
 	for i, sprite := range sheet.Sprites {
 		for _, pt := range boundingBoxPixels(sprite) {
 			newImage.Set(pt.X, pt.Y, boxColors[i%len(sheet.Sprites)])
-			drawNum(newImage, i, sprite.Max)
+			drawNum(i, sprite.Min, c)
 		}
 	}
 
@@ -269,8 +288,8 @@ func boundingBoxPixels(sprite models.Sprite) []image.Point {
 	return pixels
 }
 
-func drawNum(img *image.RGBA, i int, loc image.Point) {
-	log.Printf("TODO: draw %v", i)
+func drawNum(i int, loc models.Point, c *freetype.Context) {
+	c.DrawString(fmt.Sprintf("%v", i), freetype.Pt(loc.X, loc.Y))
 }
 
 func scanImage(img image.Image, callback func(img image.Image, x, y int)) {
