@@ -75,7 +75,7 @@ func sortSheet(sheet *models.Spritesheet) models.Spritesheet {
 	for len(sheet.Sprites) > 0 {
 		log.Printf("finding top row of sprites in %v size sheet", len(sheet.Sprites))
 		sortedSprites = append(sortedSprites, popTopRow(sheet, min, max)...)
-		log.Printf("%v unsorted remaining", len(sheet.Sprites))
+		log.Printf("%v done, %v unsorted remaining", len(sortedSprites), len(sheet.Sprites))
 	}
 	return models.Spritesheet{Sprites: sortedSprites}
 }
@@ -86,33 +86,54 @@ func sortSheet(sheet *models.Spritesheet) models.Spritesheet {
 func popTopRow(sheet *models.Spritesheet, min, max image.Point) []models.Sprite {
 	log.Printf("popping top row of bounds %v,%v", min, max)
 	topRow := []models.Sprite{}
-	for x := min.X; x <= max.X; x++ {
-		//if we found a sprite that covers this x, skip to the next x pixel
-		if containsXWithMargin(topRow, x, spriteMargin) {
-			//log.Printf("%v contains raycast %v, continuing", topRow, x)
+	notPopped := []models.Sprite{}
+	//find topLeft Sprite
+	var topLeft models.Sprite
+	minDist := math.MaxFloat64
+	for _, sprite := range sheet.Sprites {
+		//dist = distance of min point from origin
+		dist := math.Sqrt(math.Pow(float64(sprite.Min.X), 2)+math.Pow(float64(sprite.Min.Y), 2))
+		if dist < minDist {
+			minDist = dist
+			topLeft = sprite
+		}
+	}
+	topRow = append(topRow, topLeft)
+	//draw a horizontal lince from center of topLeft
+	c := center(topLeft)
+	for _, sprite := range sheet.Sprites {
+		//skip topleft
+		if sprite == topLeft {
 			continue
 		}
-		Raycast:
-		for y := min.Y; y <= max.Y; y++ {
-			for i, sprite := range sheet.Sprites {
-				if in(image.Pt(x, y), sprite) {
-					topRow = append(topRow, sprite)
-					log.Printf("appending %v", sprite)
-					//delete from sheet
-					if i+1 >= len(sheet.Sprites) {
-						sheet.Sprites = sheet.Sprites[:i]
-					} else {
-						sheet.Sprites = append(sheet.Sprites[:i], sheet.Sprites[i+1:]...)
-					}
-					break Raycast
-				}
+
+		//draw a line from center
+		for x := c.X; x <= max.X; x++{
+			pt := image.Pt(x, c.Y)
+			if pt.In(sprite.Rect()) {
+				topRow = append(topRow, sprite)
+				break
 			}
 		}
 	}
+	for _, sprite := range sheet.Sprites {
+		popped := false
+		for _, poppedSprite := range topRow {
+			if poppedSprite == sprite {
+				popped = true
+				break
+			}
+		}
+		if !popped {
+			notPopped = append(notPopped, sprite)
+		}
+	}
+	log.Printf("%v popped, %v not popped", len(topRow), len(notPopped))
 	//sort row by x position
 	sorter := spriteSorter(topRow)
 	sort.Sort(sorter)
 	log.Printf("len sorter: %v, len topRow: %v", sorter.Len(), len(topRow))
+	sheet.Sprites = notPopped
 	return []models.Sprite(sorter)
 }
 
