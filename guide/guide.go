@@ -21,8 +21,9 @@ var spriteMargin int
 func main() {
 	flag.IntVar(&spriteMargin, "margin", 0, "margin around sprites for raytrace")
 	flag.Parse()
-	if len(os.Args) != 4 {
+	if len(os.Args) < 4 {
 		fmt.Println("usage: guide <image.png> <bounds.json> <outdir> [-margin int]")
+		fmt.Printf("you gave me: %v\n", os.Args)
 		os.Exit(-1)
 	}
 	if err := guide(); err != nil {
@@ -35,6 +36,7 @@ func guide() error {
 	imgFile := os.Args[1]
 	jsonFile := os.Args[2]
 	outDir := os.Args[3]
+	log.Printf("using: \n\timgFile: %v\n\tjsonFile: %v\n\toutDir: %v\n\tmargin %v", imgFile, jsonFile, outDir, spriteMargin)
 	os.MkdirAll(outDir, 0755)
 
 	path, err := filepath.Abs(imgFile)
@@ -53,7 +55,7 @@ func guide() error {
 
 	raw, err := ioutil.ReadFile(jsonFile)
 	if err != nil {
-		return errors.New("reading json file", err)
+		return errors.New(err, "reading json file")
 	}
 	var spritesheet models.Spritesheet
 	if err := json.Unmarshal(raw, &spritesheet); err != nil {
@@ -63,14 +65,14 @@ func guide() error {
 	if err := writeSheet(sortedSpritesheet, filepath.Join(outDir, jsonFile)); err != nil {
 		return errors.New(err, "overwriting spritesheet")
 	}
-	return drawGuides(img, sortedSpritesheet, filepath.Join(outDir, imgFile))
+	return drawGuides(img, &sortedSpritesheet, filepath.Join(outDir, imgFile))
 }
 
 func sortSheet(sheet *models.Spritesheet) models.Spritesheet {
 	sortedSprites := []models.Sprite{}
 	for len(sheet.Sprites) > 0 {
 		log.Printf("finding top row of sprites in %v size sheet", len(sheet.Sprites))
-		sortedSprites = append(sortedSprites, popTopRow(sheet))
+		sortedSprites = append(sortedSprites, popTopRow(sheet)...)
 	}
 	return models.Spritesheet{Sprites: sortedSprites}
 }
@@ -92,7 +94,11 @@ func popTopRow(sheet *models.Spritesheet) []models.Sprite {
 				if in(image.Pt(x, y), sprite) {
 					topRow = append(topRow, sprite)
 					//delete from sheet
-					sheet.Sprites = append(sheet.Sprites[:i], sheet.Sprites[i+1]...)
+					if i+1 >= len(sheet.Sprites) {
+						sheet.Sprites = sheet.Sprites[:i]
+					} else {
+						sheet.Sprites = append(sheet.Sprites[:i], sheet.Sprites[i+1])
+					}
 					break Raycast
 				}
 			}
@@ -161,7 +167,8 @@ func writeSheet(sprites models.Spritesheet, outFile string) error {
 	return nil
 }
 
-func drawGuides(img image.Image, sheet models.Spritesheet, outFile string) error {
+func drawGuides(img image.Image, sheet *models.Spritesheet, outFile string) error {
+	log.Printf("drawing guides to %v", outFile)
 	newImage := image.NewRGBA(img.Bounds())
 	scanImage(img, func(img image.Image, x, y int) {
 		newImage.Set(x, y, img.At(x, y))
@@ -184,8 +191,6 @@ func drawGuides(img image.Image, sheet models.Spritesheet, outFile string) error
 	}
 
 	return png.Encode(out, newImage)
-
-	return nil
 }
 
 func boundingBoxPixels(sprites []models.Sprite) []image.Point {
@@ -193,15 +198,15 @@ func boundingBoxPixels(sprites []models.Sprite) []image.Point {
 	for _, sprite := range sprites {
 		for x := sprite.Min.X; x <= sprite.Max.X; x++ {
 			//top line
-			pixels = append(x, sprite.Min.Y)
+			pixels = append(pixels, image.Pt(x, sprite.Min.Y))
 			//bottom line
-			pixels = append(x, sprite.Max.Y)
+			pixels = append(pixels, image.Pt(x, sprite.Max.Y))
 		}
 		for y := sprite.Min.Y; y <= sprite.Max.X; y++ {
 			//left line
-			pixels = append(sprite.Min.X, y)
+			pixels = append(pixels, image.Pt(sprite.Min.X, y))
 			//right line
-			pixels = append(sprite.Max.X, y)
+			pixels = append(pixels, image.Pt(sprite.Max.X, y))
 		}
 	}
 	return pixels
