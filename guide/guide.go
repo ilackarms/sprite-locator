@@ -14,6 +14,7 @@ import (
 	"flag"
 	"sort"
 	"image/color"
+	"math"
 )
 
 var spriteMargin int
@@ -70,9 +71,11 @@ func guide() error {
 
 func sortSheet(sheet *models.Spritesheet) models.Spritesheet {
 	sortedSprites := []models.Sprite{}
+	min, max := getBounds(sheet)
 	for len(sheet.Sprites) > 0 {
 		log.Printf("finding top row of sprites in %v size sheet", len(sheet.Sprites))
-		sortedSprites = append(sortedSprites, popTopRow(sheet)...)
+		sortedSprites = append(sortedSprites, popTopRow(sheet, min, max)...)
+		log.Printf("%v unsorted remaining", len(sheet.Sprites))
 	}
 	return models.Spritesheet{Sprites: sortedSprites}
 }
@@ -80,12 +83,13 @@ func sortSheet(sheet *models.Spritesheet) models.Spritesheet {
 // like raycasting
 // draw a line down from each x pixel
 // when we hit a sprite, pop it from the sheet and add to the toprow
-func popTopRow(sheet *models.Spritesheet) []models.Sprite {
-	min, max := getBounds(sheet)
+func popTopRow(sheet *models.Spritesheet, min, max image.Point) []models.Sprite {
+	log.Printf("popping top row of bounds %v,%v", min, max)
 	topRow := []models.Sprite{}
 	for x := min.X; x <= max.X; x++ {
 		//if we found a sprite that covers this x, skip to the next x pixel
 		if containsXWithMargin(topRow, x, spriteMargin) {
+			//log.Printf("%v contains raycast %v, continuing", topRow, x)
 			continue
 		}
 		Raycast:
@@ -93,11 +97,12 @@ func popTopRow(sheet *models.Spritesheet) []models.Sprite {
 			for i, sprite := range sheet.Sprites {
 				if in(image.Pt(x, y), sprite) {
 					topRow = append(topRow, sprite)
+					log.Printf("appending %v", sprite)
 					//delete from sheet
 					if i+1 >= len(sheet.Sprites) {
 						sheet.Sprites = sheet.Sprites[:i]
 					} else {
-						sheet.Sprites = append(sheet.Sprites[:i], sheet.Sprites[i+1])
+						sheet.Sprites = append(sheet.Sprites[:i], sheet.Sprites[i+1:]...)
 					}
 					break Raycast
 				}
@@ -107,12 +112,13 @@ func popTopRow(sheet *models.Spritesheet) []models.Sprite {
 	//sort row by x position
 	sorter := spriteSorter(topRow)
 	sort.Sort(sorter)
+	log.Printf("len sorter: %v, len topRow: %v", sorter.Len(), len(topRow))
 	return []models.Sprite(sorter)
 }
 
 func containsXWithMargin(row []models.Sprite, x int, margin int) bool {
 	for _, sprite := range row {
-		if x >= sprite.Min.X - margin || x <= sprite.Max.X + margin {
+		if x >= sprite.Min.X - margin && x <= sprite.Max.X + margin {
 			return true
 		}
 	}
@@ -124,7 +130,7 @@ func in(p image.Point, sprite models.Sprite) bool {
 }
 
 func getBounds(sheet *models.Spritesheet) (image.Point, image.Point) {
-	minX := sheet.Sprites[0].Min.X
+	minX := math.MaxInt64
 	minY := sheet.Sprites[0].Min.Y
 	maxX := sheet.Sprites[0].Max.X
 	maxY := sheet.Sprites[0].Max.Y
