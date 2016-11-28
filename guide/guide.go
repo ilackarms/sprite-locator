@@ -234,6 +234,7 @@ func drawGuides(img image.Image, sheet *models.Spritesheet, outFile string) erro
 	for i, sprite := range sheet.Sprites {
 		for _, pt := range boundingBoxPixels(sprite) {
 			newImage.Set(pt.X, pt.Y, boxColors[i%len(sheet.Sprites)])
+			drawNum(newImage, i, sprite.Max)
 		}
 	}
 
@@ -268,6 +269,9 @@ func boundingBoxPixels(sprite models.Sprite) []image.Point {
 	return pixels
 }
 
+func drawNum(img *image.RGBA, i int, loc image.Point) {
+	log.Printf("TODO: draw %v", i)
+}
 
 func scanImage(img image.Image, callback func(img image.Image, x, y int)) {
 	// At(Bounds().Min.X, Bounds().Min.Y) returns the upper-left pixel of the grid.
