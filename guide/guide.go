@@ -20,23 +20,25 @@ import (
 var spriteMargin int
 
 func main() {
-	flag.IntVar(&spriteMargin, "margin", 0, "margin around sprites for raytrace")
+	marginPtr := flag.Int("margin", 0, "margin around sprites for raytrace")
+	outPtr := flag.String("out", "out", "output directory")
+	jsonPtr := flag.String("json", "", "json file")
+	imagePtr := flag.String("image", "", "image file")
 	flag.Parse()
-	if len(os.Args) < 4 {
-		fmt.Println("usage: guide <image.png> <bounds.json> <outdir> [-margin int]")
+	spriteMargin = *marginPtr
+
+	if *imagePtr == "" || *jsonPtr == "" {
+		fmt.Println("usage: guide -image <image.png> -json <bounds.json> [-out <outdir>] [-margin int]")
 		fmt.Printf("you gave me: %v\n", os.Args)
 		os.Exit(-1)
 	}
-	if err := guide(); err != nil {
+	if err := guide(*imagePtr, *jsonPtr, *outPtr); err != nil {
 		log.Fatal(err)
 	}
 	log.Print("OK")
 }
 
-func guide() error {
-	imgFile := os.Args[1]
-	jsonFile := os.Args[2]
-	outDir := os.Args[3]
+func guide(imgFile, jsonFile, outDir string) error {
 	log.Printf("using: \n\timgFile: %v\n\tjsonFile: %v\n\toutDir: %v\n\tmargin %v", imgFile, jsonFile, outDir, spriteMargin)
 	os.MkdirAll(outDir, 0755)
 
@@ -110,7 +112,7 @@ func popTopRow(sheet *models.Spritesheet, min, max image.Point) []models.Sprite 
 		//draw a line from center
 		for x := c.X; x <= max.X; x++{
 			pt := image.Pt(x, c.Y)
-			if pt.In(sprite.Rect()) {
+			if inWithMargin(pt, sprite.Rect()) {
 				topRow = append(topRow, sprite)
 				break
 			}
@@ -135,6 +137,19 @@ func popTopRow(sheet *models.Spritesheet, min, max image.Point) []models.Sprite 
 	log.Printf("len sorter: %v, len topRow: %v", sorter.Len(), len(topRow))
 	sheet.Sprites = notPopped
 	return []models.Sprite(sorter)
+}
+
+func inWithMargin(p1 image.Point, rect image.Rectangle) bool {
+	return p1.In(image.Rect(
+		rect.Min.X-spriteMargin,
+		rect.Min.Y-spriteMargin,
+		rect.Max.X+spriteMargin,
+		rect.Max.Y+spriteMargin,
+	))
+}
+
+func dist(p1, p2 image.Point) float64 {
+	return math.Sqrt(math.Pow(float64(p2.X-p1.X), 2)+math.Pow(float64(p2.Y-p1.Y), 2))
 }
 
 func getBounds(sheet *models.Spritesheet) (image.Point, image.Point) {
