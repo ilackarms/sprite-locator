@@ -137,19 +137,6 @@ func popTopRow(sheet *models.Spritesheet, min, max image.Point) []models.Sprite 
 	return []models.Sprite(sorter)
 }
 
-func containsXWithMargin(row []models.Sprite, x int, margin int) bool {
-	for _, sprite := range row {
-		if x >= sprite.Min.X - margin && x <= sprite.Max.X + margin {
-			return true
-		}
-	}
-	return false
-}
-
-func in(p image.Point, sprite models.Sprite) bool {
-	return p.In(image.Rect(sprite.Min.X, sprite.Min.Y, sprite.Max.X, sprite.Max.Y))
-}
-
 func getBounds(sheet *models.Spritesheet) (image.Point, image.Point) {
 	minX := math.MaxInt64
 	minY := sheet.Sprites[0].Min.Y
@@ -201,7 +188,6 @@ func drawGuides(img image.Image, sheet *models.Spritesheet, outFile string) erro
 		newImage.Set(x, y, img.At(x, y))
 	})
 	boxColors := make([]color.Color, 256*256*256)
-	log.Printf("slow here?")
 	i := 0
 	for r := uint8(255); r >= 0; r-- {
 		g := uint8(255 - r)
@@ -230,14 +216,11 @@ func drawGuides(img image.Image, sheet *models.Spritesheet, outFile string) erro
 			break
 		}
 	}
-	log.Printf("slow here?2")
 	for i, sprite := range sheet.Sprites {
 		for _, pt := range boundingBoxPixels(sprite) {
 			newImage.Set(pt.X, pt.Y, boxColors[i%len(sheet.Sprites)])
 		}
-		break
 	}
-	log.Printf("slow here?3")
 
 	//create or open file
 	out, err := os.Create(outFile)
@@ -261,7 +244,7 @@ func boundingBoxPixels(sprite models.Sprite) []image.Point {
 		//bottom line
 		pixels = append(pixels, image.Pt(x, sprite.Max.Y))
 	}
-	for y := sprite.Min.Y; y <= sprite.Max.X; y++ {
+	for y := sprite.Min.Y; y <= sprite.Max.Y; y++ {
 		//left line
 		pixels = append(pixels, image.Pt(sprite.Min.X, y))
 		//right line
