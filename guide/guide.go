@@ -200,8 +200,12 @@ func writeSheet(sprites models.Spritesheet, outFile string) error {
 func drawGuides(img image.Image, sheet *models.Spritesheet, outFile string) error {
 	log.Printf("drawing guides to %v", outFile)
 	newImage := image.NewRGBA(img.Bounds())
+	white := color.RGBA{255,255,255,255}
 	scanImage(img, func(img image.Image, x, y int) {
 		newImage.Set(x, y, img.At(x, y))
+		if _, _, _, a := img.At(x, y).RGBA(); a == 0{
+			newImage.Set(x, y, white)
+		}
 	})
 	boxColors := make([]color.Color, 256*256*256)
 	i := 0
@@ -233,7 +237,7 @@ func drawGuides(img image.Image, sheet *models.Spritesheet, outFile string) erro
 		}
 	}
 
-	fontBytes, err := ioutil.ReadFile("ANDRO.TTF")
+	fontBytes, err := ioutil.ReadFile("Lato-Regular.ttf")
 	if err != nil {
 		return err
 	}
