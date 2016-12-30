@@ -7,7 +7,6 @@ import (
 	"log"
 	"image/png"
 	"io/ioutil"
-	"github.com/emc-advanced-dev/pkg/errors"
 	"github.com/ilackarms/sprite-locator/models"
 	"encoding/json"
 	"image"
@@ -45,29 +44,29 @@ func guide(imgFile, jsonFile, outDir string) error {
 
 	path, err := filepath.Abs(imgFile)
 	if err != nil {
-		return errors.New(err, "abs path %v: %v", imgFile)
+		return fmt.Errorf("abs path %v: %v", imgFile, err)
 	}
 	log.Printf("reading image at %v", path)
 	reader, err := os.Open(path)
 	if err != nil {
-		return errors.New(err, "open %v", path)
+		return fmt.Errorf("open %v: %v", path, err)
 	}
 	img, err := png.Decode(reader)
 	if err != nil {
-		return errors.New(err, "reading err")
+		return fmt.Errorf("reading err: %v", err)
 	}
 
 	raw, err := ioutil.ReadFile(jsonFile)
 	if err != nil {
-		return errors.New(err, "reading json file")
+		return fmt.Errorf("reading json file: %v", err)
 	}
 	var spritesheet models.Spritesheet
 	if err := json.Unmarshal(raw, &spritesheet); err != nil {
-		return errors.New(err, "failed to unmarshal spritesheet")
+		return fmt.Errorf("failed to unmarshal spritesheet: %v", err)
 	}
 	sortedSpritesheet := sortSheet(&spritesheet)
 	if err := writeSheet(sortedSpritesheet, filepath.Join(outDir, jsonFile)); err != nil {
-		return errors.New(err, "overwriting spritesheet")
+		return fmt.Errorf("overwriting spritesheet: %v", err)
 	}
 	return drawGuides(img, &sortedSpritesheet, filepath.Join(outDir, imgFile))
 }
@@ -188,11 +187,11 @@ func (a spriteSorter) Less(i, j int) bool { return center(a[i]).X < center(a[j])
 func writeSheet(sprites models.Spritesheet, outFile string) error {
 	data, err := json.Marshal(sprites)
 	if err != nil {
-		return errors.New(err, "marshalling sprite sheet metadata")
+		return fmt.Errorf("marshalling sprite sheet metadata: %v", err)
 	}
 
 	if err := ioutil.WriteFile(outFile, data, 0644); err != nil {
-		return errors.New(err, "writing sprite sheet metadata")
+		return fmt.Errorf("writing sprite sheet metadata: %v", err)
 	}
 	return nil
 }
@@ -268,7 +267,7 @@ func drawGuides(img image.Image, sheet *models.Spritesheet, outFile string) erro
 		//open
 		out, err = os.Open(outFile)
 		if err != nil {
-			return errors.New(err, "opening existing file")
+			return fmt.Errorf("opening existing file: %v", err)
 		}
 	}
 
