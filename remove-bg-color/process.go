@@ -18,7 +18,8 @@ func main() {
 		log.Fatalf("args given: %v", args)
 	}
 	inFile := args[1]
-	if err := process(inFile, inFile); err != nil {
+	outFile := args[2]
+	if err := process(inFile, outFile); err != nil {
 		log.Fatal(err)
 	}
 	log.Print("OK")
