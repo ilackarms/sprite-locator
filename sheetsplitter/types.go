@@ -11,6 +11,7 @@ type Subsheet struct {
 	Start      Point `yaml:"start"`
 	End        Point `yaml:"end"`
 	Columns    int `yaml:"columns"`
+	SingleRow  bool `yaml:"single_row,omitempty"`
 }
 
 type Sheet struct {

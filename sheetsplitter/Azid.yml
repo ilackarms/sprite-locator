@@ -2,9 +2,9 @@ subsheets:
 - name: attack
   start:
     x: 1
-    "y": 21
+    y: 21
   end:
     x: 1537
-    "y": 796
+    y: 796
   columns: 12
 row_spacing: 1
