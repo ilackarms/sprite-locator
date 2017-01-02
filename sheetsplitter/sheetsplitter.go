@@ -56,10 +56,10 @@ func main() {
 					x0 := subsheet.Start.X + col * width
 					y0 := subsheet.Start.Y
 					box := Box{
-						X: x0,
-						Y: y0,
-						W: width,
-						H: height,
+						X: x0+1,
+						Y: y0+1,
+						W: width-1,
+						H: height-2,
 					}
 					atlas.Frames = append(atlas.Frames, Frame{
 						Filename: frameName,
@@ -77,9 +77,9 @@ func main() {
 				x0 := subsheet.Start.X + col * width
 				box := Box{
 					X: x0,
-					Y: y0,
+					Y: y0+1,
 					W: width,
-					H: height,
+					H: height-2,
 				}
 				atlas.Frames = append(atlas.Frames, Frame{
 					Filename: frameName,
