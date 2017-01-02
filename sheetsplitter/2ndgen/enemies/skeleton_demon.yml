@@ -1,0 +1,41 @@
+#NOTE: skeleton demon has no idle
+#no get hit
+
+subsheets:
+- name: attack
+  start:
+    x: 1
+    y: 21
+  end:
+    x: 2560
+    y: 1051
+  columns: 20
+
+- name: die
+  start:
+    x: 1
+    y: 1073
+  end:
+    x: 3072
+    y: 2103
+  columns: 24
+
+- name: walk
+  start:
+    x: 1
+    y: 3177
+  end:
+    x: 1024
+    y: 4207
+  columns: 8
+
+- name: special
+  start:
+    x: 1
+    y: 2125
+  end:
+    x: 2048
+    y: 3155
+  columns: 16
+
+row_spacing: 1

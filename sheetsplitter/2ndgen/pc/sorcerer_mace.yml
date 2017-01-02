@@ -1,0 +1,57 @@
+subsheets:
+
+- name: attack
+  start:
+    x: 0
+    y: 7
+  end:
+    x: 2047
+    y: 1037
+  columns: 16
+
+- name: die
+  start:
+    x: 2049
+    y: 7
+  end:
+    x: 4608
+    y: 781
+  columns: 20
+
+- name: idle
+  start:
+    x: 0
+    y: 1045
+  end:
+    x: 767
+    y: 1819
+  columns: 10
+
+- name: walk
+  start:
+    x: 2690
+    y: 1045
+  end:
+    x: 3457
+    y: 1819
+  columns: 8
+
+- name: get_hit
+  start:
+    x: 4228
+    y: 1045
+  end:
+    x: 4995
+    y: 1819
+  columns: 8
+
+- name: cast_spell
+  start:
+    x: 3074
+    y: 1827
+  end:
+    x: 4609
+    y: 2857
+  columns: 12
+
+row_spacing: 1

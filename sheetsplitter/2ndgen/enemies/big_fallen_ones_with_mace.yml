@@ -1,0 +1,47 @@
+subsheets:
+- name: attack
+  start:
+    x: 0
+    y: 7
+  end:
+    x: 1407
+    y: 1037
+  columns: 11
+
+- name: die
+  start:
+    x: 1409
+    y: 7
+  end:
+    x: 3584
+    y: 1037
+  columns: 17
+
+- name: idle
+  start:
+    x: 1024
+    y: 1045
+  end:
+    x: 2034
+    y: 2075
+  columns: 10
+
+- name: walk
+  start:
+    x: 2306
+    y: 1405
+  end:
+    x: 3329
+    y: 2075
+  columns: 8
+
+- name: get_hit
+  start:
+    x: 0
+    y: 1405
+  end:
+    x: 1023
+    y: 2075
+  columns: 8
+
+row_spacing: 1

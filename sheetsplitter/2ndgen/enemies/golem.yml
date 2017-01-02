@@ -1,0 +1,41 @@
+#NOTE: golem has no idle, no get hit
+subsheets:
+- name: attack
+  start:
+    x: 0
+    y: 7
+  end:
+    x: 1151
+    y: 781
+  columns: 12
+
+- name: die
+  start:
+    x: 0
+    y: 789
+  end:
+    x: 1151
+    y: 884
+  columns: 12
+  single_row: true
+
+- name: walk
+  start:
+    x: 1153
+    y: 7
+  end:
+    x: 2688
+    y: 781
+  columns: 16
+
+- name: special
+  start:
+    x: 1153
+    y: 789
+  end:
+    x: 3072
+    y: 884
+  columns: 10
+  single_row: true
+
+row_spacing: 1

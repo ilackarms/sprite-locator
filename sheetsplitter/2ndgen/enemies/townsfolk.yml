@@ -1,0 +1,92 @@
+subsheets:
+- name: elder
+  start:
+    x: 0
+    y: 0
+  end:
+    x: 2399
+    y: 94
+  columns: 25
+  single_row: true
+
+- name: wirt
+  start:
+    x: 0
+    y: 95
+  end:
+    x: 1919
+    y: 158
+  columns: 20
+  single_row: true
+
+- name: beggar
+  start:
+    x: 0
+    y: 159
+  end:
+    x: 1727
+    y: 254
+  columns: 18
+  single_row: true
+
+- name: healer
+  start:
+    x: 0
+    y: 256
+  end:
+    x: 1919
+    y: 350
+  columns: 20
+  single_row: true
+
+- name: dying_man
+  start:
+    x: 0
+    y: 351
+  end:
+    x: 767
+    y: 446
+  columns: 8
+  single_row: true
+
+- name: blacksmith
+  start:
+    x: 0
+    y: 447
+  end:
+    x: 1535
+    y: 539
+  columns: 16
+  single_row: true
+
+- name: dying_man
+  start:
+    x: 0
+    y: 540
+  end:
+    x: 1535
+    y: 638
+  columns: 16
+  single_row: true
+
+- name: barmaid
+  start:
+    x: 0
+    y: 639
+  end:
+    x: 1727
+    y: 734
+  columns: 18
+  single_row: true
+
+- name: witch
+  start:
+    x: 0
+    y: 735
+  end:
+    x: 1823
+    y: 829
+  columns: 19
+  single_row: true
+
+row_spacing: 0

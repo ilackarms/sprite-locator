@@ -1,0 +1,51 @@
+#NOTE: this character has no walk animation
+#use special for teleport
+
+subsheets:
+- name: attack
+  start:
+    x: 0
+    y: 7
+  end:
+    x: 2687
+    y: 1037
+  columns: 21
+
+- name: die
+  start:
+    x: 0
+    y: 2083
+  end:
+    x: 2943
+    y: 2210
+  columns: 23
+  single_row: true
+
+- name: idle
+  start:
+    x: 2305
+    y: 1045
+  end:
+    x: 3072
+    y: 2075
+  columns: 6
+
+- name: get_hit
+  start:
+    x: 2689
+    y: 7
+  end:
+    x: 3456
+    y: 1037
+  columns: 6
+
+- name: special
+  start:
+    x: 0
+    y: 1045
+  end:
+    x: 2303
+    y: 2075
+  columns: 18
+
+row_spacing: 1
