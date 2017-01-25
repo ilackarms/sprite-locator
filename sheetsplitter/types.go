@@ -12,6 +12,7 @@ type Subsheet struct {
 	End        Point `yaml:"end"`
 	Columns    int `yaml:"columns"`
 	SingleRow  bool `yaml:"single_row,omitempty"`
+	Reversed  bool `yaml:"reversed,omitempty"`
 }
 
 type Sheet struct {

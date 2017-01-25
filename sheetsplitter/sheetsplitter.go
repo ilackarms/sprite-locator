@@ -36,9 +36,21 @@ var rows = []string{
 	"se",
 }
 
+var falloutRows = map[string]int{
+	"s": 3,
+	"sw": 3,
+	"w": 4,
+	"nw": 5,
+	"n": 0,
+	"ne": 0,
+	"e": 1,
+	"se": 2,
+}
+
 func main() {
 	metaFile := flag.String("meta", "", "metadata file that matches []subsheet format")
 	imgFile := flag.String("img", "", "image file for drawing debugging boxes")
+	falloutMode := flag.Bool("f", false, "run in fallout mode instead (6 rows)")
 	flag.Parse()
 	if *metaFile == "" {
 		must("-meta must be set")
@@ -61,7 +73,7 @@ func main() {
 				//fill in every direction with the same column in the atlas
 				for _, direction := range rows {
 					frameName := fmt.Sprintf("%s.%s.%04d", animationName, direction, col)
-					x0 := subsheet.Start.X + col * width
+					x0 := subsheet.Start.X + col * (width + 1)
 					y0 := subsheet.Start.Y
 					box := Box{
 						X: x0,
@@ -79,15 +91,26 @@ func main() {
 		}
 		height := (subsheet.End.Y - subsheet.Start.Y) / len(rows)
 		for row, direction := range rows {
+			if *falloutMode {
+				row = falloutRows[direction]
+				height = (subsheet.End.Y - subsheet.Start.Y) / 6
+			}
 			y0 := subsheet.Start.Y + row * (height + sheet.RowSpacing)
 			for col := 0; col < subsheet.Columns; col++ {
 				frameName := fmt.Sprintf("%s.%s.%04d", animationName, direction, col)
 				x0 := subsheet.Start.X + col * (width + 1)
+				if subsheet.Reversed {
+					x0 = subsheet.End.X - (col+1) * (width + 1)
+				}
 				box := Box{
 					X: x0+1,
 					Y: y0+1,
-					W: width-1,
-					H: height-2,
+					W: width-3,
+					H: height-3,
+				}
+				if *falloutMode {
+					box.W+=2
+					box.H+=2
 				}
 				atlas.Frames = append(atlas.Frames, Frame{
 					Filename: frameName,
@@ -109,7 +132,7 @@ func drawDebugImage(imgFile string, atlas Atlas) error {
 	if err != nil {
 		return fmt.Errorf("open %v: %v", imgFile, err)
 	}
-	img, err := png.Decode(reader)
+	img, _, err := image.Decode(reader)
 	if err != nil {
 		return fmt.Errorf("reading err: %v", err)
 	}
