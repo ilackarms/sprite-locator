@@ -236,7 +236,7 @@ func drawGuides(img image.Image, sheet *models.Spritesheet, outFile string) erro
 		}
 	}
 
-	fontBytes, err := ioutil.ReadFile("Lato-Regular.ttf")
+	fontBytes, err := ioutil.ReadFile(os.Getenv("HOME")+"/workspace/scratch/fonts/Lato-Regular.ttf")
 	if err != nil {
 		return err
 	}

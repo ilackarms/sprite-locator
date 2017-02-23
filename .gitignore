@@ -28,3 +28,5 @@ sprite-locator
 all all.zip
 all
 all.zip
+*.png
+*.json

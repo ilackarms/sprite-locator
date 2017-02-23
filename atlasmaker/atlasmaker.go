@@ -138,18 +138,6 @@ func must(err error) {
 
 type Atlas struct {
 	Frames []Frame `json:"frames"`
-	Meta struct {
-		       App string `json:"app"`
-		       Version string `json:"version"`
-		       Image string `json:"image"`
-		       Format string `json:"format"`
-		       Size struct {
-				   W int `json:"w"`
-				   H int `json:"h"`
-			   } `json:"size"`
-		       Scale string `json:"scale"`
-		       Smartupdate string `json:"smartupdate"`
-	       } `json:"meta"`
 }
 
 type Frame struct {
